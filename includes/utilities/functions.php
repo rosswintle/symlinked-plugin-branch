@@ -34,6 +34,12 @@ function current_git_branch( $plugin_path ) {
     // Check for .git directory
     $git_dir_exists = file_exists( $resolved_path . '/.git' );
 
+    while ( !$git_dir_exists && $resolved_path !== '/' ) {
+      $resolved_path = dirname( $resolved_path );
+      // Check for .git directory
+      $git_dir_exists = file_exists( $resolved_path . '/.git' );
+    }
+
     if ( !$git_dir_exists ) {
         return 'No .git directory found in resolved path: ' . htmlspecialchars( $resolved_path );
     }
