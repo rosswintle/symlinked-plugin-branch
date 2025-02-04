@@ -12,6 +12,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Returns the git repo directory of the plugin. It will look up into
+ * parent directories as the symlink's origin may be a subdirectory
+ * of the Git repository.
+ *
+ * @param string $plugin_path The path of the plugin directory.
+ *
+ * @return string The path containing the .git directory of the symlinked plugin.
+ *                or an empty string if a git repo was not found.
+ */
+function current_git_repo_path( $plugin_path ) {
+    // Ensure the plugin path is an absolute path and resolve symlinks
+    $resolved_path = realpath( $plugin_path );
+
+    // Check for .git directory
+    $git_dir_exists = file_exists( $resolved_path . '/.git' );
+
+    while ( !$git_dir_exists && $resolved_path !== '/' ) {
+      $resolved_path = dirname( $resolved_path );
+      // Check for .git directory
+      $git_dir_exists = file_exists( $resolved_path . '/.git' );
+    }
+
+    if ( !$git_dir_exists || $resolved_path === '/' ) {
+        return '';
+    }
+
+    return $resolved_path;
+}
+
+/**
  * Returns the git branch of the given directory.
  *
  * @param string $plugin_path The path of the plugin directory.
@@ -31,16 +61,10 @@ function current_git_branch( $plugin_path ) {
         return 'Git is not installed or not in the PATH';
     }
 
-    // Check for .git directory
-    $git_dir_exists = file_exists( $resolved_path . '/.git' );
+    // Check for .git repo directory
+    $git_repo_dir = current_git_repo_path( $plugin_path );
 
-    while ( !$git_dir_exists && $resolved_path !== '/' ) {
-      $resolved_path = dirname( $resolved_path );
-      // Check for .git directory
-      $git_dir_exists = file_exists( $resolved_path . '/.git' );
-    }
-
-    if ( !$git_dir_exists ) {
+    if ( $git_repo_dir === '' ) {
         return 'No .git directory found in resolved path: ' . htmlspecialchars( $resolved_path );
     }
 

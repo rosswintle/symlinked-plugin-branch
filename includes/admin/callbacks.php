@@ -7,6 +7,7 @@
 
 namespace Symlinked_Plugin_Branch\Admin;
 
+use function Symlinked_Plugin_Branch\Utilities\current_git_repo_path;
 use function Symlinked_Plugin_Branch\Utilities\current_git_branch;
 use function Symlinked_Plugin_Branch\Utilities\get_plugins_with_symlinks;
 use function Symlinked_Plugin_Branch\Utilities\replace_home_with_tilde;
@@ -79,7 +80,9 @@ function display_column_content( $plugin_file, $plugin_data ) {
         return;
     }
 
-    $target_path = replace_home_with_tilde( readlink( $plugin_path ) );
+    $git_repo_path = current_git_repo_path( $plugin_path );
+
+    $target_path = replace_home_with_tilde( $git_repo_path );
     $branch = current_git_branch( $plugin_path );
 
     echo "
